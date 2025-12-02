@@ -89,8 +89,11 @@ export default function ShortenerCard() {
   };
 
   /** ACTIONS FROM HISTORY **/
-  const handleHistoryCopy = (item: HistoryItem) =>
-    navigator.clipboard.writeText(item.shortUrl) && notify.success("Copiado!");
+ const handleHistoryCopy = async (item: HistoryItem) => {
+  await navigator.clipboard.writeText(item.shortUrl);
+  notify.success("Copiado!");
+};
+
 
   const handleOpen = (item: HistoryItem) =>
     window.open(item.shortUrl, "_blank");

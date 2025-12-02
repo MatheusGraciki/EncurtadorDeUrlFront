@@ -1,5 +1,3 @@
-import React from "react";
-
 interface HistoryItem {
   id: number;
   originalUrl: string;
