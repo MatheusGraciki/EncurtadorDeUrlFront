@@ -14,7 +14,9 @@ Este projeto é o frontend do sistema **Graciki URL Shortener**, consumindo a AP
 ```
 https://app.graciki.systems/App
 ```
+## Backend
 
+https://github.com/MatheusGraciki/EncurtadorDeUrlAPI
 ---
 <img width="1856" height="977" alt="image" src="https://github.com/user-attachments/assets/dec4fb79-296e-4f49-aea6-1d007a68f7e7" />
 <img width="1856" height="977" alt="image" src="https://github.com/user-attachments/assets/a0add26e-9284-4649-b834-95fb67067227" />
