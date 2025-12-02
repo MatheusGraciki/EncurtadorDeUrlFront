@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/App/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/App/:path*",
+      "destination": "/"
+    }
+  ]
+}
