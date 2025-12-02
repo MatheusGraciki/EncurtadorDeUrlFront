@@ -4,19 +4,27 @@ import './styles.scss';
 import { Card, CardBody, Input, Button, Spinner } from 'reactstrap';
 import HistoryList from './../HistoryList';
 
+// 🔹 Define o tipo do item do histórico
+interface HistoryItem {
+  id: number;
+  originalUrl: string;
+  shortUrl: string;
+  createdAt: string;
+}
+
 export default function ShortenerCard() {
-  const BASE_URL = "https://www.graciki.systems"; // sem www — domínio base único
+  const BASE_URL = "https://www.graciki.systems";
 
-  const [url, setUrl] = useState('');
-  const [shortUrl, setShortUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [url, setUrl] = useState<string>('');
+  const [shortUrl, setShortUrl] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  /** LOAD SAVED HISTORY **/
+  /** LOAD HISTORY FROM LOCALSTORAGE **/
   useEffect(() => {
     const saved = localStorage.getItem('short_history');
-    if (saved) setHistory(JSON.parse(saved));
+    if (saved) setHistory(JSON.parse(saved) as HistoryItem[]);
   }, []);
 
   /** SAVE HISTORY **/
@@ -24,11 +32,12 @@ export default function ShortenerCard() {
     localStorage.setItem('short_history', JSON.stringify(history));
   }, [history]);
 
-  function pushHistory(entry) {
+  /** ADD HISTORY ITEM **/
+  function pushHistory(entry: HistoryItem) {
     setHistory(prev => [entry, ...prev].slice(0, 20));
   }
 
-  /** MAIN SHORTEN FUNCTION **/
+  /** SHORTEN URL **/
   async function handleShorten() {
     if (!url.trim() || !url.includes(".")) {
       return notify.error('Digite uma URL válida');
@@ -46,18 +55,17 @@ export default function ShortenerCard() {
       if (!res.ok) throw new Error(`API retornou ${res.status}`);
 
       const json = await res.json();
-      const code = json.data.shortUrl; // apenas o código vindo da API
+      const code: string = json.data.shortUrl;
 
       if (!code) throw new Error('API não retornou shortUrl');
 
-      const fullUrl = `${BASE_URL}/${code}`; // monta URL final
-
+      const fullUrl = `${BASE_URL}/${code}`;
       setShortUrl(fullUrl);
 
       pushHistory({
         id: Date.now(),
         originalUrl: url,
-        shortUrl: fullUrl, // sempre salva a URL completa
+        shortUrl: fullUrl,
         createdAt: new Date().toISOString(),
       });
 
@@ -72,7 +80,7 @@ export default function ShortenerCard() {
     }
   }
 
-  /** COPY CURRENT SHORT URL **/
+  /** COPY RESULT URL **/
   const handleCopy = () => {
     navigator.clipboard.writeText(shortUrl);
     setCopied(true);
@@ -80,13 +88,14 @@ export default function ShortenerCard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  /** HISTORY ACTIONS - já utilizando URL completa salva no histórico **/
-  const handleHistoryCopy = item =>
+  /** ACTIONS FROM HISTORY **/
+  const handleHistoryCopy = (item: HistoryItem) =>
     navigator.clipboard.writeText(item.shortUrl) && notify.success("Copiado!");
 
-  const handleOpen = item => window.open(item.shortUrl, "_blank");
+  const handleOpen = (item: HistoryItem) =>
+    window.open(item.shortUrl, "_blank");
 
-  const handleRemove = id =>
+  const handleRemove = (id: number) =>
     setHistory(prev => prev.filter(i => i.id !== id));
 
   return (
