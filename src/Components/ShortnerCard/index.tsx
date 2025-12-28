@@ -13,7 +13,7 @@ interface HistoryItem {
 }
 
 export default function ShortenerCard() {
-  const BASE_URL = "https://www.graciki.systems";
+  const BASE_URL = "https://api.graciki.systems";
 
   const [url, setUrl] = useState<string>('');
   const [shortUrl, setShortUrl] = useState<string>('');
@@ -59,7 +59,7 @@ export default function ShortenerCard() {
 
       if (!code) throw new Error('API não retornou shortUrl');
 
-      const fullUrl = `${BASE_URL}/${code}`;
+      const fullUrl = `api.graciki.systems/${code}`;
       setShortUrl(fullUrl);
 
       pushHistory({
