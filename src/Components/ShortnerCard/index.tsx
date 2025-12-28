@@ -59,7 +59,7 @@ export default function ShortenerCard() {
 
       if (!code) throw new Error('API não retornou shortUrl');
 
-      const fullUrl = `api.graciki.systems/${code}`;
+      const fullUrl = `${BASE_URL}/${code}`;
       setShortUrl(fullUrl);
 
       pushHistory({
