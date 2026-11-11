@@ -1,176 +1,187 @@
-import { useState, useEffect } from 'react';
-import { notify } from 'src/Components/Toast';
-import './styles.scss';
-import { Card, CardBody, Input, Button, Spinner } from 'reactstrap';
-import HistoryList from './../HistoryList';
-import { api, API_URL } from 'src/services/api';
-
-// 🔹 Define o tipo do item do histórico
-interface HistoryItem {
-  id: number;
-  originalUrl: string;
-  shortUrl: string;
-  createdAt: string;
-}
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import HistoryList, { type HistoryItem } from "../HistoryList";
+import Icon from "../Icon";
+import { notify } from "../Toast";
+import { api, API_URL } from "src/services/api";
+import "./shortener-card.scss";
 
 interface CreateShortUrlResponse {
-  data: {
-    shortUrl: string;
-  };
+  data: { shortUrl: string };
+}
+interface ShortenerCardProps {
+  search: string;
+}
+const HISTORY_KEY = "short_history";
+
+function isHistoryItem(value: unknown): value is HistoryItem {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.id === "number" &&
+    typeof item.originalUrl === "string" &&
+    typeof item.shortUrl === "string" &&
+    typeof item.createdAt === "string"
+  );
 }
 
-export default function ShortenerCard() {
-  const [url, setUrl] = useState<string>('');
-  const [shortUrl, setShortUrl] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+function isValidUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
-  /** LOAD HISTORY FROM LOCALSTORAGE **/
-  useEffect(() => {
-    const saved = localStorage.getItem('short_history');
-    if (saved) setHistory(JSON.parse(saved) as HistoryItem[]);
-  }, []);
+function loadHistory(): HistoryItem[] {
+  try {
+    const saved = localStorage.getItem(HISTORY_KEY);
+    if (!saved) return [];
+    const parsed: unknown = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed.filter(isHistoryItem) : [];
+  } catch {
+    localStorage.removeItem(HISTORY_KEY);
+    return [];
+  }
+}
 
-  /** SAVE HISTORY **/
+export default function ShortenerCard({ search }: ShortenerCardProps) {
+  const [url, setUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>(loadHistory);
+
   useEffect(() => {
-    localStorage.setItem('short_history', JSON.stringify(history));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
 
-  /** ADD HISTORY ITEM **/
-  function pushHistory(entry: HistoryItem) {
-    setHistory(prev => [entry, ...prev].slice(0, 20));
-  }
+  const visibleHistory = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("pt-BR");
+    if (!query) return history;
+    return history.filter((item) =>
+      `${item.shortUrl} ${item.originalUrl}`
+        .toLocaleLowerCase("pt-BR")
+        .includes(query),
+    );
+  }, [history, search]);
 
-  /** SHORTEN URL **/
-  async function handleShorten() {
-    if (!url.trim() || !url.includes(".")) {
-      return notify.error('Digite uma URL válida');
+  async function handleShorten(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const originalUrl = url.trim();
+    if (!isValidUrl(originalUrl)) {
+      notify.error("Informe uma URL completa, incluindo http:// ou https://");
+      return;
+    }
+    if (!API_URL) {
+      notify.error("A URL da API não está configurada");
+      return;
     }
 
     try {
       setLoading(true);
-
-      const response = await api.post<CreateShortUrlResponse>('/create', {
-        originalUrl: url.trim(),
+      const response = await api.post<CreateShortUrlResponse>("/create", {
+        originalUrl,
       });
       const code = response.data.data.shortUrl;
-
-      if (!code) throw new Error('API não retornou shortUrl');
-
-      const fullUrl = `${API_URL}/${code}`;
-      setShortUrl(fullUrl);
-
-      pushHistory({
-        id: Date.now(),
-        originalUrl: url,
-        shortUrl: fullUrl,
-        createdAt: new Date().toISOString(),
-      });
-
-      notify.success("Link encurtado!");
+      if (!code) throw new Error("A API não retornou o link encurtado");
+      const generatedUrl = /^https?:\/\//i.test(code)
+        ? code
+        : `${API_URL.replace(/\/$/, "")}/${code.replace(/^\//, "")}`;
+      setShortUrl(generatedUrl);
+      setHistory((current) =>
+        [
+          {
+            id: Date.now(),
+            originalUrl,
+            shortUrl: generatedUrl,
+            createdAt: new Date().toISOString(),
+          },
+          ...current,
+        ].slice(0, 20),
+      );
       setUrl("");
-
-    } catch (err) {
-      console.error(err);
-      notify.error("Erro ao encurtar o link");
+      notify.success("Link encurtado!");
+    } catch (error) {
+      console.error(error);
+      notify.error("Não foi possível encurtar o link");
     } finally {
       setLoading(false);
     }
   }
 
-  /** COPY RESULT URL **/
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shortUrl);
-    setCopied(true);
-    notify.success("Copiado!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  /** ACTIONS FROM HISTORY **/
- const handleHistoryCopy = async (item: HistoryItem) => {
-  await navigator.clipboard.writeText(item.shortUrl);
-  notify.success("Copiado!");
-};
-
-
-  const handleOpen = (item: HistoryItem) =>
-    window.open(item.shortUrl, "_blank");
-
-  const handleRemove = (id: number) =>
-    setHistory(prev => prev.filter(i => i.id !== id));
+  async function copyToClipboard(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      notify.success("Link copiado!");
+    } catch {
+      notify.error("Não foi possível copiar o link");
+    }
+  }
 
   return (
-    <div className="d-flex justify-content-center w-100 p-3">
-      <Card className="shortener-card border-0">
-        <CardBody className="p-4 p-md-5">
-
-          <h2 className="shortener-title">
-            🔗 <span>Encurtador de Links</span>
-          </h2>
-
-          <div className="shortener-form">
-            <Input
-              placeholder="Cole seu link aqui..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <Button onClick={handleShorten} disabled={loading}>
-              {loading ? <Spinner size="sm" /> : "Encurtar"}
-            </Button>
-          </div>
-
-          {shortUrl && (
-            <div className="shortener-result mt-4">
-              <p className="mb-1 text-muted small">Link Encurtado:</p>
-
-              <a
-                href={shortUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="d-block text-truncate"
-              >
-                {shortUrl}
-              </a>
-
-              <div className="d-flex gap-2 mt-3">
-                <Button size="sm" color="success" onClick={handleCopy}>
-                  {copied ? "✅ Copiado!" : "📋 Copiar"}
-                </Button>
-
-                <Button
-                  size="sm"
-                  outline
-                  color="secondary"
-                  onClick={() => window.open(shortUrl, "_blank")}
-                >
-                  Abrir
-                </Button>
-              </div>
-            </div>
+    <div className="shortener-content">
+      <form className="shortener-form" onSubmit={handleShorten}>
+        <div className="shortener-form__field">
+          <Icon name="link" size={25} />
+          <label className="sr-only" htmlFor="url-input">
+            URL para encurtar
+          </label>
+          <input
+            id="url-input"
+            type="url"
+            inputMode="url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="Cole sua URL aqui..."
+            autoComplete="url"
+          />
+        </div>
+        <button type="submit" disabled={loading}>
+          {loading ? (
+            <span className="spinner" />
+          ) : (
+            <Icon name="scissors" size={22} />
           )}
+          {loading ? "Encurtando..." : "Encurtar"}
+        </button>
+      </form>
 
-          <div className="mt-5">
-            <h5 className="mb-3" style={{ fontWeight: 700, opacity: .8 }}>
-              Histórico Recente
-            </h5>
-
-            {history.length > 0 ? (
-              <HistoryList
-                items={history}
-                onOpen={handleOpen}
-                onCopy={handleHistoryCopy}
-                onRemove={handleRemove}
-              />
-            ) : (
-              <p className="text-center text-muted">
-                Nenhum link ainda — crie o primeiro!
-              </p>
-            )}
+      {shortUrl && (
+        <div className="shortener-result" role="status">
+          <div>
+            <span>Seu novo link</span>
+            <a href={shortUrl} target="_blank" rel="noreferrer">
+              {shortUrl}
+            </a>
           </div>
+          <button type="button" onClick={() => copyToClipboard(shortUrl)}>
+            <Icon name="copy" size={18} /> Copiar
+          </button>
+        </div>
+      )}
 
-        </CardBody>
-      </Card>
+      <section className="history-panel" id="links-recentes">
+        <header className="history-panel__header">
+          <div>
+            <Icon name="clock" size={25} />
+            <h2>Links recentes</h2>
+          </div>
+          <a href="#links-recentes">
+            Ver todos <Icon name="arrow-right" size={18} />
+          </a>
+        </header>
+        <HistoryList
+          items={visibleHistory}
+          hasSearch={Boolean(search.trim())}
+          onOpen={(item) =>
+            window.open(item.shortUrl, "_blank", "noopener,noreferrer")
+          }
+          onCopy={(item) => copyToClipboard(item.shortUrl)}
+          onRemove={(id) =>
+            setHistory((current) => current.filter((item) => item.id !== id))
+          }
+        />
+      </section>
     </div>
   );
 }

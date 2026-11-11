@@ -1,283 +1,90 @@
-/* ============================= */
-/* 🕒 HISTÓRICO CARD EMPTY UX    */
-/* ============================= */
-
-.shortener-card.history-empty {
-
-  background: linear-gradient(120deg, var(--card-bg) 80%, var(--accent-hover) 100%);
-  border: 2px solid var(--accent-hover);
-  box-shadow: 0 10px 30px rgba(127,240,193,0.12);
-  opacity: 0.97;
-  transition: box-shadow 0.3s, border 0.3s;
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #e9f1ee;
+  background: #031313;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --text-color: #e9f1ee;
+  --text-muted: #9eafaa;
+  --accent-color: #39e9aa;
+  --border-color: rgba(109, 201, 171, 0.22);
 }
-
-.shortener-card.history-empty:hover {
-  box-shadow: 0 16px 40px rgba(127,240,193,0.18);
-  border-color: var(--accent-color);
+* {
+  box-sizing: border-box;
 }
-
-.history-empty-title {
-
-  color: var(--accent-hover);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.7rem;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 6px rgba(127,240,193,0.12);
+html {
+  scroll-behavior: smooth;
 }
-
-.history-empty-desc {
-
-  color: var(--text-color);
-  opacity: 0.98;
-  font-size: 1.08rem;
-  font-weight: 500;
-  text-shadow: 0 1px 4px rgba(76,149,108,0.10);
-}
-/* ============================= */
-/* 🌎 GLOBAL THEME VARIABLES     */
-/* ============================= */
-
 body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f7faf8;
-}
-
-body.light {
-  --bg-color: #f7faf8;
-  --text-color: #1e2b24;
-  --card-bg: #ffffffee;
-  --input-bg: #ffffff;
-  --accent-color: #4c956c;
-  --accent-hover: #69b48a;
-}
-
-body.dark {
-  --bg-color: #0d1110;
-  --text-color: #e5f2ec;
-  --card-bg: rgba(22, 26, 24, 0.9);
-  --input-bg: #121615;
-  --accent-color: #56d09a;
-  --accent-hover: #7ff0c1;
-}
-
-body {
-  background: var(--bg-color);
-  color: var(--text-color);
-  transition: background 0.5s ease;
-}
-
-/* ============================= */
-/* 🌌 BACKGROUND        */
-/* ============================= */
-
-.shortener-wrapper {
+  min-width: 320px;
   min-height: 100vh;
-  display: grid;
-  place-content: center;
-  padding: 1rem;
-
-  background:
-    radial-gradient(circle at top, rgba(76,149,108,0.14), transparent 60%),
-    radial-gradient(circle at bottom, rgba(76,149,108,0.08), transparent 60%);
-}
-
-body.dark .shortener-wrapper {
-  background:
-    radial-gradient(circle at top, rgba(127,199,155,0.18), transparent 65%),
-    linear-gradient(180deg, #0e1211, #161b19);
-}
-
-/* ============================= */
-/* 💎 CARD UX            */
-/* ============================= */
-
-.shortener-card {
-  width: 100%;
-  max-width: 460px;
-  padding: 2.1rem;
-  border-radius: 20px !important;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: linear-gradient(to bottom, var(--card-bg), rgba(255,255,255,0.02));
-  backdrop-filter: blur(6px);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.08);
-  animation: cardFloat 6s ease-in-out infinite;
-  background-clip: padding-box;
-    border: 2px solid var(--accent-color); /* mais visível */
-}
-
-body.dark .shortener-card {
-  box-shadow: 0 40px 90px rgba(0,0,0,0.65);
-  
-}
-
-
-
-.shortener-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(120deg,
-      transparent 20%,
-      rgba(255,255,255,0.12),
-      transparent 80%);
-  opacity: .45;
-  pointer-events: none;
-}
-
-.shortener-card::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border-radius: inherit;
-  background:
-    linear-gradient(135deg, var(--accent-color), transparent 35%, transparent 65%, var(--accent-hover));
-  opacity: .18;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-}
-
-
-/* ============================= */
-/* 🌟 PULSE GLOW                 */
-/* ============================= */
-
-@keyframes cardFloat {
-  0% { box-shadow: 0 20px 50px rgba(0,0,0,.2);}
-  50% { box-shadow: 0 20px 80px rgba(86,208,154,0.25);}
-  100% { box-shadow: 0 20px 50px rgba(0,0,0,.2);}
-}
-
-body.dark .shortener-card {
-  animation: glowPulse 6s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-  0% { box-shadow: 0 30px 80px rgba(0,0,0,.6);}
-  50% { box-shadow: 0 40px 120px rgba(127,255,195,.25);}
-  100% { box-shadow: 0 30px 80px rgba(0,0,0,.6);}
-}
-
-/* ============================= */
-/* 📝 TITLE                     */
-/* ============================= */
-
-.shortener-title {
-  font-size: 1.55rem;
-  text-align: center;
-  font-weight: 800;
-  margin-bottom: 1.6rem;
+  margin: 0;
   color: var(--text-color);
-  letter-spacing: -0.4px;
-
-  span {
-    color: var(--accent-color);
-  }
+  background: #031313;
 }
-
-/* ============================= */
-/* 📬 FORM                      */
-/* ============================= */
-
-.shortener-form {
-  display: flex;
-  gap: 0.7rem;
-
-  .input {
-    width: 100%;
-    border-radius: 14px;
-    border: 2px solid transparent;
-    background:
-      linear-gradient(var(--input-bg), var(--input-bg)) padding-box,
-      linear-gradient(135deg, var(--accent-color), transparent) border-box;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    color: var(--text-color);
-  }
-
-  button {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)) !important;
-    border-radius: 14px;
-    font-weight: 700;
-    padding: 0.75rem 1.4rem;
-    letter-spacing: 0.4px;
-    color: #fff !important;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    transition: transform .2s, filter .2s;
-  }
-
-  button:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
+body.light,
+body.dark {
+  --text-color: #e9f1ee;
+  --text-muted: #9eafaa;
+  --accent-color: #39e9aa;
+  --border-color: rgba(109, 201, 171, 0.22);
 }
-
-body.dark .shortener-form input {
-  background:
-    linear-gradient(#1b1f1d, #1b1f1d) padding-box,
-    linear-gradient(135deg, var(--accent-color), transparent) border-box;
+button,
+input {
+  font: inherit;
 }
-
-/* ============================= */
-/* 📦 RESULT BOX                */
-/* ============================= */
-
-.shortener-result {
-  margin-top: 1.3rem;
-  padding: 0.95rem 1.1rem;
-  border-radius: 14px;
-  border: 1px solid var(--accent-color);
-  background: rgba(76, 149, 108, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  body.dark & {
-    background: rgba(127,199,155,0.1);
-  }
-
-  small {
-    font-size: 0.72rem;
-    opacity: 0.75;
-  }
-
-  a {
-    font-weight: 700;
-    color: var(--accent-color);
-    word-break: break-word;
-  }
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
-
-/* ============================= */
-/* 📋 COPY BUTTON               */
-/* ============================= */
-
-.copy-button {
-  margin-top: .6rem;
-  font-size: .75rem !important;
-  padding: .45rem .9rem !important;
-  border-radius: 8px !important;
+button {
+  cursor: pointer;
 }
-
-.copy-button:hover {
-  filter: brightness(1.12);
+a {
+  color: inherit;
+  text-decoration: none;
 }
-
-/* ============================= */
-/* 📱 RESPONSIVO                */
-/* ============================= */
-
-@media (max-width: 600px) {
-  .shortener-card { padding: 1.4rem; }
-  .shortener-form { flex-direction: column; }
-  .shortener-form button { width: 100%; }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid #48edb2;
+  outline-offset: 2px;
 }
-
-::-webkit-input-placeholder {
-  color: white;
-  opacity: 0.6;
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+#root {
+  min-height: 100vh;
+}
+::selection {
+  color: #002b20;
+  background: #55edb8;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #041a18;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a6754;
+  border: 2px solid #041a18;
+  border-radius: 999px;
 }

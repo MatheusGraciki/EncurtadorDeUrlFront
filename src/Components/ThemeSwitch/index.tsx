@@ -1,16 +1,16 @@
 import { useTheme } from "src/Context/ThemeContext";
 import type { ThemeSwitchProps } from "./type";
-import classNames from "classnames";
 import "./styles.scss";
 
-export default function ThemeSwitch({ size = "md", className }: ThemeSwitchProps) {
+export default function ThemeSwitch({
+  size = "md",
+  className,
+}: ThemeSwitchProps) {
   const { theme, toggleTheme } = useTheme();
 
-  const switchClass = classNames(
-    "theme-switch",
-    className,
-    `theme-switch--${size}`
-  );
+  const switchClass = ["theme-switch", className, `theme-switch--${size}`]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
