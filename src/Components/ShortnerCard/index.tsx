@@ -3,6 +3,7 @@ import { notify } from 'src/Components/Toast';
 import './styles.scss';
 import { Card, CardBody, Input, Button, Spinner } from 'reactstrap';
 import HistoryList from './../HistoryList';
+import { api, API_URL } from 'src/services/api';
 
 // 🔹 Define o tipo do item do histórico
 interface HistoryItem {
@@ -12,9 +13,13 @@ interface HistoryItem {
   createdAt: string;
 }
 
-export default function ShortenerCard() {
-  const BASE_URL = "https://api.graciki.systems";
+interface CreateShortUrlResponse {
+  data: {
+    shortUrl: string;
+  };
+}
 
+export default function ShortenerCard() {
   const [url, setUrl] = useState<string>('');
   const [shortUrl, setShortUrl] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -46,20 +51,14 @@ export default function ShortenerCard() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${BASE_URL}/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalUrl: url.trim() }),
+      const response = await api.post<CreateShortUrlResponse>('/create', {
+        originalUrl: url.trim(),
       });
-
-      if (!res.ok) throw new Error(`API retornou ${res.status}`);
-
-      const json = await res.json();
-      const code: string = json.data.shortUrl;
+      const code = response.data.data.shortUrl;
 
       if (!code) throw new Error('API não retornou shortUrl');
 
-      const fullUrl = `${BASE_URL}/${code}`;
+      const fullUrl = `${API_URL}/${code}`;
       setShortUrl(fullUrl);
 
       pushHistory({
